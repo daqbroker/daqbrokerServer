@@ -1,0 +1,29 @@
+client/.idea/workspace.xml
+client/.idea/workspace.xml
+client/.idea/workspace.xml
+
+#Pycache files
+*__pycache__/*
+
+#pyo & pyc files
+*.pyo
+*.pyc
+
+#Local databases
+server/localSettings
+*.sqlite
+
+#Log files
+server/*.log*
+
+#Lock files
+server/.__server.lock
+
+#Secrets and hashes
+server/secretEnc
+server/snowflake
+
+#rsync data
+server/static/rsync/logFile.log
+server/static/rsync/rsyncd.conf
+server/static/rsync/rsyncd.secrets
