@@ -18,7 +18,7 @@ class WebServer:
 		self.config = uvicorn.Config(self.app, host= self.host, port= self.port, log_level=self.log_level, loop="asyncio")
 		self.server = uvicorn.Server(self.config)
 
-		self.app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / 'frontend/dist')), name="static")
+		self.app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / 'daqbrokerfrontend')), name="static")
 		self.app.include_router(api, prefix="/api")
 
 		@self.app.get("/api/.*", status_code=404, include_in_schema=False)
@@ -27,7 +27,7 @@ class WebServer:
 
 		@self.app.get("/.*", include_in_schema=False)
 		def root():
-			return FileResponse(str(Path(__file__).parent / 'frontend/dist/index.html'))
+			return FileResponse(str(Path(__file__).parent / 'daqbrokerfrontend/index.html'))
 
 	def serve(self):
 		return self.server.serve()
