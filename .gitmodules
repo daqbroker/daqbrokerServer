@@ -1,0 +1,4 @@
+[submodule "web/daqbrokerfrontend"]
+	path = web/daqbrokerfrontend
+	url = https://github.com/daqbroker/daqbrokerfrontend.git
+	branch = deployed
