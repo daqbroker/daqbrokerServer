@@ -3,13 +3,13 @@ from typing import List
 from fastapi import APIRouter
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT, HTTP_422_UNPROCESSABLE_ENTITY
 
-from daqbroker.web.routes.utils import get_current_user, Depends, HTTPException, oauth2_scheme
+from daqbrokerServer.web.routes.utils import get_current_user, Depends, HTTPException, oauth2_scheme
 
-from daqbroker.storage import session
-from daqbroker.storage.local_settings import User
-from daqbroker.web.classes import User as UserData
-from daqbroker.web.classes import UserInput
-from daqbroker.storage.utils import get_local_resource, get_local_by_attr, get_local_resources, add_local_resource, delete_local_resource
+from daqbrokerServer.storage import session
+from daqbrokerServer.storage.local_settings import User
+from daqbrokerServer.web.classes import User as UserData
+from daqbrokerServer.web.classes import UserInput
+from daqbrokerServer.storage.utils import get_local_resource, get_local_by_attr, get_local_resources, add_local_resource, delete_local_resource
 
 app = APIRouter()
 

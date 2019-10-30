@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from starlette.websockets import WebSocket
 
-from daqbroker.web.routes import routes
-from daqbroker.web.socket.notifier import Notifier
+from daqbrokerServer.web.routes import routes
+from daqbrokerServer.web.socket.notifier import Notifier
 
 api = APIRouter()
 

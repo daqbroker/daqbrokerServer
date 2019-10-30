@@ -1,7 +1,7 @@
 from enum import Enum
 from pydantic import BaseModel, validator
 
-from daqbroker.web.utils import hash_password
+from daqbrokerServer.web.utils import hash_password
 
 class Token(BaseModel):
 	access_token: str

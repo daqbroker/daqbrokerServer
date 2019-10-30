@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_422_UNPROCESSABLE_ENTITY
 
-from daqbroker.storage.resource import Resource
-from daqbroker.storage.instruments import Instrument
+from daqbrokerServer.storage.resource import Resource
+from daqbrokerServer.storage.instruments import Instrument
 
 #The user resource class
 class User(Resource):

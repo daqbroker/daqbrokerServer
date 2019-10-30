@@ -3,9 +3,9 @@ from datetime import timedelta
 from fastapi import Depends, HTTPException
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from daqbroker.web.classes import Token
-from daqbroker.web.routes.utils import get_current_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token
-from daqbroker.storage.local_settings import User
+from daqbrokerServer.web.classes import Token
+from daqbrokerServer.web.routes.utils import get_current_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token
+from daqbrokerServer.storage.local_settings import User
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 #ACCESS_TOKEN_EXPIRE_SECONDS = 10

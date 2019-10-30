@@ -1,1 +1,1 @@
-from daqbroker.daqbroker import DAQBrokerServer
+from daqbrokerServer.daqbroker import DAQBrokerServer

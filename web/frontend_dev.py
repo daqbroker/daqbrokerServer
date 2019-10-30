@@ -3,7 +3,7 @@ import uvicorn
 
 from fastapi import FastAPI
 
-from daqbroker.web.api import api
+from daqbrokerServer.web.api import api
 
 app = FastAPI()
 

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from daqbroker.storage.base import Base
+from daqbrokerServer.storage.base import Base
 
 #Getting local resources, this should work for anything, as long as it has an 'id' attribute defined as PK
 def get_local_resource(db: Session, Resource: Base, r_id: int):

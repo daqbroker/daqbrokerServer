@@ -8,12 +8,12 @@ from fastapi import Depends, HTTPException
 from starlette.status import HTTP_401_UNAUTHORIZED
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-from daqbroker.web.utils import verify_password
-from daqbroker.storage import session
-from daqbroker.storage.local_settings import User
-from daqbroker.storage.utils import get_local_resource, get_local_by_attr
+from daqbrokerServer.web.utils import verify_password
+from daqbrokerServer.storage import session
+from daqbrokerServer.storage.local_settings import User
+from daqbrokerServer.storage.utils import get_local_resource, get_local_by_attr
 
-from daqbroker.web.classes import TokenData, ConnectionInput
+from daqbrokerServer.web.classes import TokenData, ConnectionInput
 
 ALGORITHM = "HS256"
 

@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from starlette.responses import FileResponse, HTMLResponse
 from starlette.staticfiles import StaticFiles
 
-from daqbroker.web.api import api
-from daqbroker.web.frontend import frontend
+from daqbrokerServer.web.api import api
+from daqbrokerServer.web.frontend import frontend
 
 main_app = FastAPI()
 

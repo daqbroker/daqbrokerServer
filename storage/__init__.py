@@ -3,8 +3,8 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from daqbroker.web.utils import hash_password
-from daqbroker.storage.local_settings import Base, User, Connection
+from daqbrokerServer.web.utils import hash_password
+from daqbrokerServer.storage.local_settings import Base, User, Connection
 
 local_url = "sqlite+pysqlite:///" + str(Path(__file__).parent / "storage_local.sqlite")
 local_engine = create_engine(local_url)

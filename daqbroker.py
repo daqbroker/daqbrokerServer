@@ -3,8 +3,8 @@ import asyncio
 
 from sqlalchemy.orm import sessionmaker
 
-from daqbroker.web import WebServer
-from daqbroker.storage import local_engine
+from daqbrokerServer.web import WebServer
+from daqbrokerServer.storage import local_engine
 
 Session = sessionmaker()
 Session.configure(bind=local_engine)

@@ -1,7 +1,7 @@
 from typing import Set, List
 from pydantic import BaseModel
 
-from daqbroker.storage.resource import Resource
+from daqbrokerServer.storage.resource import Resource
 
 class ExtraInfo(BaseModel):
 

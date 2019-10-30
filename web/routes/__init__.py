@@ -1,6 +1,6 @@
-from daqbroker.web.routes.auth import app as auth
-from daqbroker.web.routes.users import app as users
-from daqbroker.web.routes.connections import app as connections
+from daqbrokerServer.web.routes.auth import app as auth
+from daqbrokerServer.web.routes.users import app as users
+from daqbrokerServer.web.routes.connections import app as connections
 
 routes = {}
 

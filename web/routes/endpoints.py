@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from daqbroker.services.web.api.auth import app as auth
+from daqbrokerServer.services.web.api.auth import app as auth
 
 app = APIRouter()
 

@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from starlette.websockets import WebSocket
 
-from daqbroker.storage.observer import Subject, Observer, UpdateData
+from daqbrokerServer.storage.observer import Subject, Observer, UpdateData
 
 class Notifier(Observer):
     def __init__(self, subjects : Dict[str, Subject] = []):

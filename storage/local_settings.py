@@ -6,7 +6,7 @@ from sqlalchemy.schema import UniqueConstraint
 from starlette.status import HTTP_401_UNAUTHORIZED
 from fastapi import HTTPException
 
-from daqbroker.storage.base import Base
+from daqbrokerServer.storage.base import Base
 
 class User(Base):
 	__tablename__ = "users"
