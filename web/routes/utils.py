@@ -11,7 +11,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from daqbrokerServer.web.utils import verify_password
 from daqbrokerServer.storage import session
 from daqbrokerServer.storage.local_settings import User
-from daqbrokerServer.storage.utils import get_local_resource, get_local_by_attr
+from daqbrokerServer.storage.utils import get_local_resources
 
 from daqbrokerServer.web.classes import TokenData, ConnectionInput
 
@@ -31,7 +31,7 @@ def get_secret_key():
 	return key
 
 def authenticate_user(db, username: str, password: str, level: int = 0):
-	user = get_local_by_attr(db= session, Resource= User, attr_name= "username", attr_val= username)
+	user = get_local_resources(db= session, Resource= User, key_vals= { "username":username }).first()
 	if not user:
 		return False
 	if not verify_password(user.password, password):
@@ -64,14 +64,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 		if type(e) == jwt.exceptions.ExpiredSignatureError:
 			credentials_exception.detail = "Token expired"
 		raise credentials_exception
-	user = get_local_by_attr(db= session, Resource= User, attr_name= "username", attr_val= username)
+	user = get_local_resources(db= session, Resource= User, key_vals= { "username":username }).first()
 	if user is None:
 		raise credentials_exception
 	return user
 
 def make_url(conn: ConnectionInput):
 	print("MAKING CONNECTION URL")
-
-def test_connection(conn: ConnectionInput):
-	print("AM TESTING", ConnectionInput.dict())
 
