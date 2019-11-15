@@ -14,7 +14,7 @@ async def stupid():
 	while True:
 		await asyncio.sleep(1)
 
-class DAQBrokerServer:
+class Server:
 	def __init__(self, **kwargs):
 		try:
 			self.loop = asyncio.get_running_loop()
