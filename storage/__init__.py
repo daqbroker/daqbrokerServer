@@ -1,3 +1,5 @@
+import base64
+
 from pathlib import Path
 #from sqlitedict import SqliteDict
 from sqlalchemy import create_engine
@@ -30,7 +32,7 @@ if not query.count() > 0:
 query = session.query(Connection).filter(Connection.id == 0)
 if not query.count() > 0:
 
-	connection = Connection(id= 0, type= "sqlite+pysqlite", hostname= str(Path(__file__).parent), username= "admin", password= "admin", port=0)
+	connection = Connection(id= 0, type= "sqlite+pysqlite", hostname= "local", username= "admin", password= base64.b64encode(b"admin"), port=0)
 	session.add(connection)
 	session.commit()
 
