@@ -6,7 +6,7 @@ from daqbrokerServer.storage.base import Base
 #Getting local resources, this should work for anything, as long as it has an 'id' attribute defined as PK
 def get_local_resources(db: Session, Resource: Base, r_id: int = None, key_vals: dict = {}, offset: int = 0, limit: int = -1):
 	query = db.query(Resource)
-	if r_id:
+	if not r_id == None:
 		return query.filter(Resource.id == r_id).first()
 	else:
 		for attr, val in key_vals.items():
@@ -29,7 +29,6 @@ def add_local_resource(db: Session, Resource: Base, user_input: BaseModel, r_id 
 		resource = Resource(**user_input.dict())
 		db.add(resource)
 	db.commit()
-	#db.refresh(resource)
 	return resource
 
 def delete_local_resource(db: Session, Resource: Base, instance: Base):
