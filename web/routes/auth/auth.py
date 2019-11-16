@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import Depends, HTTPException
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from daqbrokerServer.web.classes import Token
+from daqbrokerServer.web.classes.token import Token
 from daqbrokerServer.web.routes.utils import get_current_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token
 from daqbrokerServer.storage.local_settings import User
 
