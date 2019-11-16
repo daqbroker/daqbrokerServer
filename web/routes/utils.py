@@ -10,10 +10,10 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from daqbrokerServer.web.utils import verify_password
 from daqbrokerServer.storage import session
-from daqbrokerServer.storage.local_settings import User
+from daqbrokerServer.storage.local_settings import User, Connection
 from daqbrokerServer.storage.utils import get_local_resources
 
-from daqbrokerServer.web.classes import TokenData, ConnectionInput
+from daqbrokerServer.web.classes.token import TokenData
 
 ALGORITHM = "HS256"
 
@@ -69,6 +69,33 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 		raise credentials_exception
 	return user
 
-def make_url(conn: ConnectionInput):
-	print("MAKING CONNECTION URL")
+def get_user(username: str, status_code: int, err_msg: str = "", find= True):
+	user = get_local_resources(db= session, Resource= User, key_vals= { "username":username }).first()
+	exception = HTTPException(
+		status_code=status_code,
+		detail=err_msg,
+	)
+	if find:
+		if not user:
+			raise exception
+		return user
+	else:
+		if user:
+			raise exception
+		return None
+
+def get_connection(conn_id: int, status_code: int ,err_msg: str = "", find= True):
+	connection = get_local_resources(db= session, Resource= Connection, r_id=conn_id)
+	exception = HTTPException(
+		status_code=status_code,
+		detail=err_msg
+	)
+	if find:
+		if not connection:
+			raise exception
+		return connection
+	else:
+		if connection:
+			raise exception
+		return None
 
