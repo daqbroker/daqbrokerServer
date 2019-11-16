@@ -24,16 +24,20 @@ if not query.count() > 0:
 	password = hash_password(pwd)
 
 	user = User(id= 0, type= 3, email= "mail", username= "admin", password= password)
-	session.add(user)
-	session.commit()
 ##########################################################################################
 
 ##### THIS SHOULD LOOK FOR RECORDS OF LOCAL DATABASE, CREATES IF IT DOES NOT EXIST #######
-query = session.query(Connection).filter(Connection.id == 0)
-if not query.count() > 0:
+query2 = session.query(Connection).filter(Connection.id == 0)
+if not query2.count() > 0:
 
 	connection = Connection(id= 0, type= "sqlite+pysqlite", hostname= "local", username= "admin", password= base64.b64encode(b"admin"), port=0)
+
+##########################################################################################
+
+#Actually adding the objects - if one does not exist the other will most likely not exist too
+if (not query.count() > 0) or (not query2.count() > 0):
+	connection.users.append(user)
+	session.add(user)
 	session.add(connection)
 	session.commit()
 
-##########################################################################################

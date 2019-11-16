@@ -1,13 +1,21 @@
 import base64
 import enum
 
-from sqlalchemy import Column, Integer, String, Enum, LargeBinary, create_engine, exc, inspect
+from sqlalchemy import Table, Column, Integer, String, Enum, LargeBinary, ForeignKey, create_engine, exc, inspect
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 
 from starlette.status import HTTP_401_UNAUTHORIZED
 from fastapi import HTTPException
 
 from daqbrokerServer.storage.base import Base
+
+users_connections = Table(
+	"users_connections",
+	Base.metadata,
+	Column("connection", Integer, ForeignKey("connections.id")),
+	Column("user", String, ForeignKey("users.username"))
+)
 
 class User(Base):
 	__tablename__ = "users"
@@ -17,6 +25,7 @@ class User(Base):
 	email = Column(String, unique=True)
 	username = Column(String, unique=True)
 	password = Column(String)
+	connections = relationship("Connection", secondary=users_connections, back_populates="users")
 
 	def test_security(self, level = 0):
 		if self.type < level:
@@ -35,6 +44,7 @@ class Connection(Base):
 	port = Column(Integer)
 	username = Column(String)
 	password = Column(LargeBinary)
+	users = relationship("User", secondary=users_connections, back_populates="connections")
 	__table_args__ = (UniqueConstraint("type", "hostname", "port", "username", "password", name="_connection_details"),)
 
 	def make_url(self):
