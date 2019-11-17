@@ -119,3 +119,4 @@ async def get_connection_users(conn_id: int, usernames: List[str], current_user:
 			to_delete.append(user)
 	session.commit()
 	return to_delete
+

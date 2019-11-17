@@ -87,3 +87,4 @@ async def remove_user(username: str, conn_ids: List[int], current_user: User = D
 			user.connections.remove(conn_exists[0])
 	session.commit()
 	return to_delete
+
