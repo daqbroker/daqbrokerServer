@@ -31,3 +31,4 @@ class UserInput(User):
 		if v == "":
 			raise ValueError('Password field must not be empty')
 		return hash_password(v)
+

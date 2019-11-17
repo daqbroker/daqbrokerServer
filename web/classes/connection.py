@@ -29,3 +29,4 @@ class ConnectionInput(ConnBase):
 		if v == "":
 			raise ValueError('Password field must not be empty')
 		return base64.b64encode(v.encode("utf-8"))
+
