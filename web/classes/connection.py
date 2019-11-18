@@ -17,6 +17,7 @@ class ConnBase(BaseModel):
 
 class Connection(ConnBase):
 	id: int = None
+	connectable: bool = None
 
 	class Config:
 		orm_mode = True
