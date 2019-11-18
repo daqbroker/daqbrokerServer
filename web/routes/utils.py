@@ -5,12 +5,13 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from secrets import token_hex
 from fastapi import Depends, HTTPException
-from starlette.status import HTTP_401_UNAUTHORIZED
+from starlette.requests import Request
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_503_SERVICE_UNAVAILABLE
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from daqbrokerServer.web.utils import verify_password
-from daqbrokerServer.storage import session
-from daqbrokerServer.storage.local_settings import User, Connection
+from daqbrokerServer.storage import session_open, local_engine
+from daqbrokerServer.storage.local_schema import User, Connection
 from daqbrokerServer.storage.utils import get_local_resources
 
 from daqbrokerServer.web.classes.token import TokenData
@@ -31,7 +32,7 @@ def get_secret_key():
 	return key
 
 def authenticate_user(db, username: str, password: str, level: int = 0):
-	user = get_local_resources(db= session, Resource= User, key_vals= { "username":username }).first()
+	user = get_local_resources(db= db, Resource= User, key_vals= { "username":username }).first()
 	if not user:
 		return False
 	if not verify_password(user.password, password):
@@ -48,7 +49,7 @@ def create_access_token(*, data: dict, expires_delta: timedelta = None):
 	encoded_jwt = jwt.encode(to_encode, get_secret_key(), ALGORITHM)
 	return encoded_jwt
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Depends(oauth2_scheme)):
 	credentials_exception = HTTPException(
 		status_code=HTTP_401_UNAUTHORIZED,
 		detail="Could not validate credentials",
@@ -64,13 +65,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 		if type(e) == jwt.exceptions.ExpiredSignatureError:
 			credentials_exception.detail = "Token expired"
 		raise credentials_exception
-	user = get_local_resources(db= session, Resource= User, key_vals= { "username":username }).first()
-	if user is None:
-		raise credentials_exception
-	return user
+	with session_open(local_engine) as session:
+		user = get_local_resources(db=session, Resource= User, key_vals= { "username":username }).first()
+		if user is None:
+			raise credentials_exception
+		return user
 
-def get_user(username: str, status_code: int, err_msg: str = "", find= True):
-	user = get_local_resources(db= session, Resource= User, key_vals= { "username":username }).first()
+def get_user(db, username: str, status_code: int, err_msg: str = "", find= True):
+	user = get_local_resources(db=db, Resource= User, key_vals= { "username":username }).first()
 	exception = HTTPException(
 		status_code=status_code,
 		detail=err_msg,
@@ -84,8 +86,8 @@ def get_user(username: str, status_code: int, err_msg: str = "", find= True):
 			raise exception
 		return None
 
-def get_connection(conn_id: int, status_code: int ,err_msg: str = "", find= True):
-	connection = get_local_resources(db= session, Resource= Connection, r_id=conn_id)
+def get_connection(db, conn_id: int, status_code: int ,err_msg: str = "", find= True):
+	connection = get_local_resources(db=db, Resource= Connection, r_id=conn_id)
 	exception = HTTPException(
 		status_code=status_code,
 		detail=err_msg
@@ -99,3 +101,64 @@ def get_connection(conn_id: int, status_code: int ,err_msg: str = "", find= True
 			raise exception
 		return None
 
+def test_connection(connection: Connection):
+	exception = HTTPException(
+		status_code=HTTP_503_SERVICE_UNAVAILABLE,
+		detail="",
+	)
+	connection.setup() # This is only here because there is no knowing whether the connection is instantiated in user land or loaded from the database - to review (inefficient)
+	if connection.connectable:
+		return True
+	else:
+		exception.detail = new_connection.conn_error
+		raise exception
+
+def add_campaign(connection: Connection, campaign: str):
+	exception = HTTPException(
+		status_code=HTTP_409_CONFLICT,
+		detail="A campaign with that name already exists",
+	)
+	test_connection(connection)
+	if campaign in connection.campaigns:
+		raise exception
+	if len(campaign) > 30:
+		exception.status_code=HTTP_422_UNPROCESSABLE_ENTITY
+		exception.detail="A campaign identifier must be no longer than 30 characters"
+		raise exception
+	if not "".join(campaign.split("_")).isalnum():
+		exception.status_code=HTTP_422_UNPROCESSABLE_ENTITY
+		exception.detail="A campaign identifier must not contain special characters (only '_' are allowed)"
+		raise exception
+	db_name = "daqbroker_" + campaign
+	connection.create_database(db_name)
+	connection.get_databases()
+	return connection.campaigns
+
+def remove_campaign(connection: Connection, campaign: str):
+	exception = HTTPException(
+		status_code=HTTP_404_NOT_FOUND,
+		detail="Campaign does not exist on connection with id='" + str(connection.id) + "'"
+	)
+	if campaign in connection.campaigns: # Assuming connection is loaded from database, this is reasonable
+		db_name = "daqbroker_" + campaign
+		connection.remove_database(db_name)
+		connection.get_databases()
+		return connection.campaigns
+	raise exception
+
+class AuthUser:
+
+	def __init__(self, test_level: int = 0):
+		self.test_level = test_level
+
+	def __call__(self, user: User = Depends(get_current_user),):
+		if user.type < self.test_level:
+			raise HTTPException(
+				status_code=HTTP_401_UNAUTHORIZED,
+				detail="You do not have permission to access this resource",
+				headers={"WWW-Authenticate": "Bearer"},
+			)
+		return user
+
+def get_db(request: Request):
+	return request.state.db
