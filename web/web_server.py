@@ -1,13 +1,25 @@
 import uvicorn
 from pathlib import Path
 from fastapi import FastAPI
-from starlette.responses import FileResponse, HTMLResponse
+from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
+from starlette.responses import FileResponse, HTMLResponse, Response
 
+from daqbrokerServer.storage import Session, LocalSession
 from daqbrokerServer.web.api import api
 from daqbrokerServer.web.frontend import frontend
 
 main_app = FastAPI()
+
+@main_app.middleware("http")
+async def db_session_middleware(request: Request, call_next):
+    response = Response("Internal server error", status_code=500)
+    try:
+        request.state.db = Session()
+        response = await call_next(request)
+    finally:
+        request.state.db.close()
+    return response
 
 class WebServer:
 	def __init__(self, **kwargs):
