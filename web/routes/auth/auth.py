@@ -5,7 +5,8 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from daqbrokerServer.web.classes.token import Token
 from daqbrokerServer.web.routes.utils import get_current_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token
-from daqbrokerServer.storage.local_settings import User
+from daqbrokerServer.storage import session_open, local_engine, LocalSession
+from daqbrokerServer.storage.local_schema import User
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 #ACCESS_TOKEN_EXPIRE_SECONDS = 10
@@ -15,9 +16,10 @@ app = APIRouter()
 #db_obj = get_database()
 users_db = {}
 
-@app.post("/token", response_model = Token)
+@app.post("/token", response_model = Token, )
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(users_db, form_data.username, form_data.password)
+    session = LocalSession()
+    user = authenticate_user(session, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
