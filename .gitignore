@@ -11,6 +11,7 @@ client/.idea/workspace.xml
 
 #Local databases
 server/localSettings
+server/storage/databases
 *.sqlite
 
 #Log files
