@@ -4,11 +4,6 @@ import asyncio
 from sqlalchemy.orm import sessionmaker
 
 from daqbrokerServer.web import WebServer
-from daqbrokerServer.storage import local_engine
-
-Session = sessionmaker()
-Session.configure(bind=local_engine)
-session = Session()
 
 async def stupid():
 	while True:
