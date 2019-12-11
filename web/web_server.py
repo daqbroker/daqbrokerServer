@@ -15,9 +15,6 @@ def setup_api(**kwargs):
 
 	main_app = FastAPI()
 
-	#local_session = LocalSession(**kwargs)
-	#local_session.setup()
-
 	@main_app.on_event("startup")
 	def open_database_connection_pools():
 		utils.local_session = LocalSession(**kwargs)
@@ -25,21 +22,6 @@ def setup_api(**kwargs):
 	@main_app.on_event("shutdown")
 	def close_database_connection_pools():
 		if utils.local_session: utils.local_session.teardown()
-
-	# @main_app.middleware("http")
-	# def db_session_middleware(request: Request, call_next):
-	# 	response = Response("Internal server error", status_code=500)
-	# 	try:
-	# 		sess = local_session.session()
-	# 		request.state.local_session = sess #local_session.session
-	# 		#for key,val in kwargs.items():
-	# 		#	setattr(request.state, key, val)
-	# 		print("MIDDLEWARE ENGAGED", threading.get_ident())
-	# 		response = await call_next(request)
-	# 	finally:
-	# 		print("MIDDLEWARE CLOSING", threading.get_ident())
-	# 		sess.close()
-	# 	return response
 
 	return main_app
 

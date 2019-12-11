@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from daqbrokerServer.web.utils import verify_password
 # from daqbrokerServer.storage import session_open, local_engine
-from daqbrokerServer.storage.local_schema import User, Connection
+from daqbrokerServer.storage.server_schema import User, Connection
 from daqbrokerServer.storage.utils import get_local_resources
 from daqbrokerServer.web.classes.token import TokenData
 
@@ -42,21 +42,6 @@ async def get_db(db_conn = Depends(get_db_conn)):
 
 async def get_db_folder(db_conn = Depends(get_db_conn)):
 	return db_conn.db_folder
-
-# def get_db(request: Request):
-# 	keys = ["db_folder"]
-# 	args = {}
-
-# 	#for key in keys:
-# 	#	args[key] = getattr(request.state, key) if hasattr(request.state, key) else None
-# 	#local_session = LocalSession(**args)
-# 	#local_session.setup()
-# 	#sess = request.state.local_session()
-# 	return request.state.local_session
-# 	#print("DEPENDENCY", threading.get_ident(), sess)
-# 	#yield sess
-# 	#print("DEPENDENCY DONE", threading.get_ident(), sess)
-# 	#sess.close()
 
 def get_secret_key():
 	file_path = Path(__file__).parent / 'secret.key'
