@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_503_SERVICE_UNAVAILABLE
 
 from daqbrokerServer.web.routes.utils import AuthUser
-from daqbrokerServer.storage.local_schema import Connection, User
+from daqbrokerServer.storage.server_schema import Connection, User
 from daqbrokerServer.web.classes.connection import Connection as ConnectionData, ConnectionInput
 from daqbrokerServer.web.classes.user import User as UserData
 from daqbrokerServer.storage.utils import get_local_resources, add_local_resource, delete_local_resource

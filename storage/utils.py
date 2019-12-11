@@ -1,10 +1,9 @@
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from daqbrokerServer.storage.base import Base
-
 #Getting local resources, this should work for anything, as long as it has an 'id' attribute defined as PK
-def get_local_resources(db: Session, Resource: Base, r_id: int = None, key_vals: dict = {}, offset: int = 0, limit: int = -1):
+def get_local_resources(db: Session, Resource: declarative_base, r_id: int = None, key_vals: dict = {}, offset: int = 0, limit: int = -1):
 	query = db.query(Resource)
 	if not r_id == None:
 		return query.filter(Resource.id == r_id).first()
@@ -18,7 +17,7 @@ def get_local_resources(db: Session, Resource: Base, r_id: int = None, key_vals:
 		return query
 	return None
 
-def add_local_resource(db: Session, Resource: Base, user_input: BaseModel, r_id = None):
+def add_local_resource(db: Session, Resource: declarative_base, user_input: BaseModel, r_id = None):
 	if r_id:
 		data_dict = user_input.dict()
 		resource = get_local_resources(db= db, Resource= Resource, r_id= r_id)
@@ -31,8 +30,15 @@ def add_local_resource(db: Session, Resource: Base, user_input: BaseModel, r_id 
 	db.commit()
 	return resource
 
-def delete_local_resource(db: Session, Resource: Base, instance: Base):
+def delete_local_resource(db: Session, Resource: declarative_base, instance: declarative_base):
 	db.delete(instance)
 	db.commit()
 	return instance
+
+class Campaign:
+
+	def __init__(self, session: Session, name:str):
+		self.session = session
+		self.name = name
+		self.instruments = None
 

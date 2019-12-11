@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 from daqbrokerServer.web.utils import hash_password
-from daqbrokerServer.storage.local_schema import Base, User, Connection
+from daqbrokerServer.storage.server_schema import ServerBase, User, Connection
 from daqbrokerServer.storage.contextual_session import session_open
 
 # ###### THIS CREATES THE LOCAL STRUCTURE NECESSARY TO HOLD LOCAL DATABASES #######
@@ -40,8 +40,8 @@ class LocalSession:
 		self.engine = create_engine(self.url)
 		self.session = scoped_session(sessionmaker(bind=self.engine))
 
-		Base.metadata.reflect(self.engine, extend_existing= True, autoload_replace= False)
-		Base.metadata.create_all(self.engine, checkfirst= True)
+		ServerBase.metadata.reflect(self.engine, extend_existing= True, autoload_replace= False)
+		ServerBase.metadata.create_all(self.engine, checkfirst= True)
 
 		Connection.set_db_folder(self.db_folder)
 

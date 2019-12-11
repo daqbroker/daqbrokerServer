@@ -4,24 +4,24 @@ import os
 from pathlib import Path
 from contextlib import contextmanager
 
-from sqlalchemy import Table, Column, Integer, String, Enum, LargeBinary, ForeignKey, create_engine, exc, inspect, orm, create_engine, event
+from sqlalchemy import Table, Column, Integer, String, Enum, LargeBinary, Boolean, ForeignKey, create_engine, exc, inspect, orm, create_engine, event
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.sql import text
 
 from starlette.status import HTTP_401_UNAUTHORIZED
 from fastapi import HTTPException
 
-from daqbrokerServer.storage.base import Base
-from daqbrokerServer.storage.remote_schema import RemoteBase
+from daqbrokerServer.storage.base import ServerBase
+from daqbrokerServer.storage.daqbroker_schema import DaqbrokerBase
 
 users_connections = Table(
 	"users_connections",
-	Base.metadata,
+	ServerBase.metadata,
 	Column("connection", Integer, ForeignKey("connections.id")),
 	Column("user", String, ForeignKey("users.username"))
 )
 
-class User(Base):
+class User(ServerBase):
 	__tablename__ = "users"
 
 	id = Column(Integer, primary_key=True)
@@ -39,7 +39,7 @@ class User(Base):
 				headers={"WWW-Authenticate": "Bearer"},
 			)
 
-class Connection(Base):
+class Connection(ServerBase):
 	__tablename__ = "connections"
 
 	id = Column(Integer, primary_key=True)
@@ -104,8 +104,8 @@ class Connection(Base):
 			self.test() # This should update the engine & session objects
 			if self.connectable:
 				# This should get all the stuff and create all the stuff that needs creating
-				RemoteBase.metadata.reflect(self.engine, extend_existing= True, autoload_replace= False)
-				RemoteBase.metadata.create_all(self.engine, checkfirst= True)
+				DaqbrokerBase.metadata.reflect(self.engine, extend_existing= True, autoload_replace= False)
+				DaqbrokerBase.metadata.create_all(self.engine, checkfirst= True)
 
 	def remove_database(self, database):
 		self.get_databases()
@@ -163,12 +163,14 @@ class Connection(Base):
 		self.campaigns = ()
 		self.get_databases()
 
-class Node(Base):
+class Node(ServerBase):
+	__tablename__ = "nodes"
+
 	id = Column(Integer, primary_key=True)
 	uuid = Column(String)
 	ip = Column(String)
 	port = Column(Integer)
-
+	active = Column(Boolean)
 
 @event.listens_for(Connection, 'load')
 def on_load_connection(target, value):

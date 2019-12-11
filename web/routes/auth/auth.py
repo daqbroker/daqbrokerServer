@@ -8,7 +8,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from daqbrokerServer.web.classes.token import Token
 from daqbrokerServer.web.routes.utils import get_current_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, get_db
 # from daqbrokerServer.storage import session_open, local_engine, LocalSession
-from daqbrokerServer.storage.local_schema import User
+from daqbrokerServer.storage.server_schema import User
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 #ACCESS_TOKEN_EXPIRE_SECONDS = 10

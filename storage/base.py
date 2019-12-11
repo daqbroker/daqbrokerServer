@@ -1,10 +1,10 @@
 from sqlalchemy.ext.declarative import declarative_base
 
-#Declarative base?
-Base = declarative_base()
+# Base used on the local settings database
+ServerBase = declarative_base()
 
-#RemoteBase
-RemoteBase = declarative_base()
+# Base used to describe a daqbroker database
+DaqbrokerBase = declarative_base()
 
 def get_base():
 	return Base
