@@ -8,7 +8,7 @@ from daqbrokerServer.storage.local_schema import Connection, User
 from daqbrokerServer.web.classes.connection import Connection as ConnectionData, ConnectionInput
 from daqbrokerServer.web.classes.user import User as UserData
 from daqbrokerServer.storage.utils import get_local_resources, add_local_resource, delete_local_resource
-from daqbrokerServer.web.routes.utils import get_connection, get_user, get_db, test_connection, add_campaign, remove_campaign
+from daqbrokerServer.web.routes.utils import get_connection, get_user, get_db, get_db_folder, test_connection, add_campaign, remove_campaign
 
 app = APIRouter()
 
@@ -52,7 +52,7 @@ async def add_connection(new_conn: ConnectionInput, session= Depends(get_db), cu
 	return added_conn
 
 @app.post("/{conn_id}/users", response_model=List[UserData], dependencies=[Depends(AuthUser(3))])
-async def add_users_to_connection(conn_id: int, usernames: List[str], session= Depends(get_db)):
+async def assign_users_to_connection(conn_id: int, usernames: List[str], session= Depends(get_db)):
 	connection = get_connection(session, conn_id, HTTP_404_NOT_FOUND, err_msg="Connection with id='" + str(conn_id) + "' not found")
 	for username in usernames:
 		user = get_user(session, username, HTTP_404_NOT_FOUND, err_msg="User '" + username + "' not found")
@@ -102,7 +102,7 @@ async def remove_connection(conn_id: int, session= Depends(get_db)):
 	return delete_local_resource(db= session, Resource= Connection, instance= connection)
 
 @app.delete("/{conn_id}/users", response_model=List[UserData], dependencies=[Depends(AuthUser(3))])
-async def remove_users_from_connection(conn_id: int, usernames: List[str], session= Depends(get_db)):
+async def unassign_users_from_connection(conn_id: int, usernames: List[str], session= Depends(get_db)):
 	connection = get_connection(session, conn_id, HTTP_404_NOT_FOUND, err_msg="Connection with id='" + str(conn_id) + "' not found")
 	to_delete = []
 	for username in usernames:
@@ -119,3 +119,4 @@ async def remove_users_from_connection(conn_id: int, usernames: List[str], sessi
 async def remove_campaign_from_connection(conn_id: int, campaign: str, session= Depends(get_db)):
 	connection = get_connection(session, conn_id, HTTP_404_NOT_FOUND, err_msg="Connection with id='" + str(conn_id) + "' not found")
 	return remove_campaign(connection, campaign)
+
