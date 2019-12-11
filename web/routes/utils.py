@@ -1,5 +1,6 @@
 import os
 import jwt
+import threading
 from jwt import PyJWTError
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -9,16 +10,53 @@ from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_503_SERVICE_UNAVAILABLE
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+from typing import Optional, AsyncIterable
+
+from sqlalchemy.engine import Engine as Database
+from sqlalchemy.orm import Session
+
 from daqbrokerServer.web.utils import verify_password
-from daqbrokerServer.storage import session_open, local_engine
+# from daqbrokerServer.storage import session_open, local_engine
 from daqbrokerServer.storage.local_schema import User, Connection
 from daqbrokerServer.storage.utils import get_local_resources
-
 from daqbrokerServer.web.classes.token import TokenData
 
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+
+local_session = None
+
+async def get_db_conn():
+	assert local_session is not None
+	return local_session
+
+
+# This is the part that replaces sessionmaker
+async def get_db(db_conn = Depends(get_db_conn)):
+	try:
+		sess = db_conn.session # Session(bind= local_session.engine)
+		yield sess
+	finally:
+		sess.remove()
+
+async def get_db_folder(db_conn = Depends(get_db_conn)):
+	return db_conn.db_folder
+
+# def get_db(request: Request):
+# 	keys = ["db_folder"]
+# 	args = {}
+
+# 	#for key in keys:
+# 	#	args[key] = getattr(request.state, key) if hasattr(request.state, key) else None
+# 	#local_session = LocalSession(**args)
+# 	#local_session.setup()
+# 	#sess = request.state.local_session()
+# 	return request.state.local_session
+# 	#print("DEPENDENCY", threading.get_ident(), sess)
+# 	#yield sess
+# 	#print("DEPENDENCY DONE", threading.get_ident(), sess)
+# 	#sess.close()
 
 def get_secret_key():
 	file_path = Path(__file__).parent / 'secret.key'
@@ -49,7 +87,7 @@ def create_access_token(*, data: dict, expires_delta: timedelta = None):
 	encoded_jwt = jwt.encode(to_encode, get_secret_key(), ALGORITHM)
 	return encoded_jwt
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme), session= Depends(get_db)):
 	credentials_exception = HTTPException(
 		status_code=HTTP_401_UNAUTHORIZED,
 		detail="Could not validate credentials",
@@ -65,11 +103,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 		if type(e) == jwt.exceptions.ExpiredSignatureError:
 			credentials_exception.detail = "Token expired"
 		raise credentials_exception
-	with session_open(local_engine) as session:
-		user = get_local_resources(db=session, Resource= User, key_vals= { "username":username }).first()
-		if user is None:
-			raise credentials_exception
-		return user
+	# with session_open(local_engine) as session:
+	user = get_local_resources(db=session, Resource= User, key_vals= { "username":username }).first()
+	if user is None:
+		raise credentials_exception
+	return user
 
 def get_user(db, username: str, status_code: int, err_msg: str = "", find= True):
 	user = get_local_resources(db=db, Resource= User, key_vals= { "username":username }).first()
@@ -106,7 +144,6 @@ def test_connection(connection: Connection):
 		status_code=HTTP_503_SERVICE_UNAVAILABLE,
 		detail="",
 	)
-	connection.setup() # This is only here because there is no knowing whether the connection is instantiated in user land or loaded from the database - to review (inefficient)
 	if connection.connectable:
 		return True
 	else:
@@ -151,7 +188,7 @@ class AuthUser:
 	def __init__(self, test_level: int = 0):
 		self.test_level = test_level
 
-	def __call__(self, user: User = Depends(get_current_user),):
+	async def __call__(self, user: User = Depends(get_current_user),):
 		if user.type < self.test_level:
 			raise HTTPException(
 				status_code=HTTP_401_UNAUTHORIZED,
@@ -160,5 +197,3 @@ class AuthUser:
 			)
 		return user
 
-def get_db(request: Request):
-	return request.state.db
