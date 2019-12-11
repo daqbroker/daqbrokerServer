@@ -8,6 +8,7 @@ from pydantic import BaseModel, validator
 class ConnectionTypes(str, Enum):
 	sqlite = "sqlite+pysqlite" # SQLite is not a remote database, there will only be one entry
 	mysql = "mysql"
+	postgres = "postgres"
 
 class ConnBase(BaseModel):
 	hostname: str = None
