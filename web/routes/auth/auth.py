@@ -1,11 +1,13 @@
+import threading
+
 from fastapi import APIRouter
 from datetime import timedelta
 from fastapi import Depends, HTTPException
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 from daqbrokerServer.web.classes.token import Token
-from daqbrokerServer.web.routes.utils import get_current_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token
-from daqbrokerServer.storage import session_open, local_engine, LocalSession
+from daqbrokerServer.web.routes.utils import get_current_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, get_db
+# from daqbrokerServer.storage import session_open, local_engine, LocalSession
 from daqbrokerServer.storage.local_schema import User
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -16,9 +18,8 @@ app = APIRouter()
 #db_obj = get_database()
 users_db = {}
 
-@app.post("/token", response_model = Token, )
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    session = LocalSession()
+@app.post("/token", response_model = Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session= Depends(get_db)):
     user = authenticate_user(session, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -32,7 +33,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.get("/test_token")
+@app.get("/test_token") #This should maybe return the user object, unsure
 async def test_access_token(current_user: User = Depends(get_current_user)):
     return True
 
