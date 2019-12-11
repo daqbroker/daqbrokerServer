@@ -14,9 +14,6 @@ from fastapi import HTTPException
 from daqbrokerServer.storage.base import Base
 from daqbrokerServer.storage.remote_schema import RemoteBase
 
-# This defines the folder where local databases are to be stored
-db_folder = Path(__file__).parent / "databases"
-
 users_connections = Table(
 	"users_connections",
 	Base.metadata,
@@ -54,14 +51,28 @@ class Connection(Base):
 	users = orm.relationship("User", secondary=users_connections, back_populates="connections")
 	__table_args__ = (UniqueConstraint("type", "hostname", "port", "username", "password", name="_connection_details"),)
 
-	database = None
-	databases = ()
-	campaigns = ()
+	db_folder = Path(__file__).parent / "databases"
+
+	def __init__ (
+		self, type: str = None, hostname: str = None, port: int = None, username: str = None, password: str = b'', users: list = [], db_folder: str = None, id: int = None
+	):
+
+		# Database things
+		self.id = id
+		self.type = type
+		self.hostname = hostname
+		self.port = port
+		self.username = username
+		self.password = password
+		self.users = users
+
+		# Setup the database, make connection tests, check databses, etc...
+		self.setup()
 
 	def make_url(self):
 		decoded_pw = base64.b64decode(self.password).decode()
 		if "sqlite" in self.type:
-			self.url = self.type + ":///" + str(db_folder / "settings.sqlite") if not self.database else self.type + ":///" + str(db_folder / (self.database + ".sqlite"))
+			self.url = self.type + ":///" + str(self.db_folder / "settings.sqlite") if not self.database else self.type + ":///" + str(self.db_folder / (self.database + ".sqlite"))
 		else:
 			self.url = self.type + "://" + self.username + ":" + decoded_pw + "@" + self.hostname + ":" + str(self.port)
 			if self.database:
@@ -77,10 +88,10 @@ class Connection(Base):
 		self.test()
 		if self.connectable:
 			if "sqlite" in self.type:
-				self.databases = (db_name.split(".")[0] for db_name in os.listdir(db_folder) if "daqbroker_" in db_name)
+				self.databases = tuple(db_name.split(".")[0] for db_name in os.listdir(self.db_folder) if "daqbroker_" in db_name)
 			else:
-				self.databases = (db_name for db_name in self.inspector.get_schema_names() if "daqbroker_" in db_name)
-		self.campaigns = ("_".join(db_name.split("_")[1:]) for db_name in self.databases)
+				self.databases = tuple(db_name for db_name in self.inspector.get_schema_names() if "daqbroker_" in db_name)
+		self.campaigns = tuple("_".join(db_name.split("_")[1:]) for db_name in self.databases)
 
 	def create_database(self, database):
 		self.get_databases()
@@ -89,7 +100,6 @@ class Connection(Base):
 				with self.session() as session:
 					command = text("CREATE DATABASE " + database)
 					session.execute(command)
-			# HERE THE TABLES MUST BE CREATED SOMEHOW
 			self.database = database
 			self.test() # This should update the engine & session objects
 			if self.connectable:
@@ -104,6 +114,17 @@ class Connection(Base):
 				with self.session() as session:
 					command = text("DROP DATABASE " + database)
 					session.execute(command)
+			else:
+				db_path = self.db_folder / ( database + ".sqlite" )
+				if db_path.is_file():
+					os.remove(db_path)
+				else:
+					# Should there be an exception here?!
+					print("COULD NOT FIND PATH FOR THIS DATABASE", db_path)
+
+	@classmethod
+	def set_db_folder(self, db_folder=None):
+		self.db_folder = Path(__file__).parent / "databases" if db_folder == None else Path(db_folder)
 
 	@contextmanager
 	def session(self, **kwargs):
@@ -137,7 +158,17 @@ class Connection(Base):
 		return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
 
 	def setup(self):
+		self.database = None
+		self.databases = ()
+		self.campaigns = ()
 		self.get_databases()
+
+class Node(Base):
+	id = Column(Integer, primary_key=True)
+	uuid = Column(String)
+	ip = Column(String)
+	port = Column(Integer)
+
 
 @event.listens_for(Connection, 'load')
 def on_load_connection(target, value):
