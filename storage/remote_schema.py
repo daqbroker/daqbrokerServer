@@ -7,5 +7,4 @@ class Settings(RemoteBase):
 
 	time = Column(BigInteger, primary_key=True)
 	max_conns = Column(Integer)
-
-
+	#max_instruments = Column(Integer)
